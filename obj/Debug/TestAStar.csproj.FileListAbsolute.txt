@@ -1,0 +1,7 @@
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\bin\Debug\TestAStar.exe.config
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\bin\Debug\TestAStar.exe
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\bin\Debug\TestAStar.pdb
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\obj\Debug\TestAStar.csprojAssemblyReference.cache
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\obj\Debug\TestAStar.csproj.CoreCompileInputs.cache
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\obj\Debug\TestAStar.exe
+C:\Users\USER\Documents\Visual Studio 2017\Projects\TestAStar\TestAStar\obj\Debug\TestAStar.pdb
