@@ -1,186 +1,173 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace ConsoleApp1
+namespace AStar
 {
+
     public class Labyrinth
     {
-        /// <summary>
-        /// A represention of a matrix of nodes. Row, Column
-        /// </summary>
-        private readonly Node[][] nodeMatrix;
+        List<Node> openList     = new List<Node>();
+        List<Node> closedList   = new List<Node>();
+        List<Route> routes      = new List<Route>();
 
-        /// <summary>
-        /// Nodes that have been checked
-        /// </summary>
-        private List<Node> closeNodes = new List<Node>();
+        readonly int matrixRows, matrixColumns;
+        readonly int[] initialIndex, finalIndex;
 
-        /// <summary>
-        /// Index of the initial node. Rown, Column
-        /// </summary>
-        private int[] initialPosition;
-
-        /// <summary>
-        /// Index of the destination node. Rown, Column
-        /// </summary>
-        private int[] destinationPosition;
-        
-
-        /// <summary>
-        /// Initialize the a matrix of nodes
-        /// </summary>
-        /// <param name="matrix"></param>
         public Labyrinth(Matrix matrix)
         {
-            float heuristic;
-            nodeMatrix = new Node[matrix.rows][];
-            for (int i = 0; i < matrix.rows; i++)
+            matrixRows = matrix.rows;
+            matrixColumns = matrix.columns;
+            initialIndex = matrix.InitialPoint;
+            finalIndex = matrix.DestinationPoint;
+
+            int rowDistance, columnDistance, heuristic;
+
+            for (int i = 0; i < matrix.columns; i++)
             {
-                destinationPosition = matrix.DestinationPoint;
-                initialPosition = matrix.InitialPoint;
-                int rowHeuristic = (destinationPosition[0] - i) * (destinationPosition[0] - i);
-                int columnHeuristic;
-                Node[] tempNodeColumn = new Node[matrix.Values[i].Length];
-                for (int j = 0; j < matrix.columns; j++)
+                rowDistance = Math.Abs(i - matrix.DestinationPoint[0]);
+                for (int j = 0; j < matrix.rows; j++)
                 {
-                    columnHeuristic = (destinationPosition[1] - j) * (destinationPosition[1] - j);
-                    heuristic = (float)Math.Sqrt(rowHeuristic + columnHeuristic);
-                    if(matrix.Values[i][j] == 1)
-                    {
-                        heuristic *= 2;
-                    }
-                    tempNodeColumn[j] = new Node((matrix.Values[i][j] == 0), heuristic, i, j);
-                }
-                nodeMatrix[i] = tempNodeColumn;
-            }
-        }
+                    if (matrix.Values[j][i] == 1) { continue; }
 
-        public bool Solve()
-        {
-            closeNodes.Clear();
-            closeNodes.TrimExcess();
-            closeNodes.Add(nodeMatrix[initialPosition[0]][initialPosition[1]]);
-
-            Node currentNode = closeNodes[0];
-            Node initialNode = currentNode;
-            Node destinationNode = nodeMatrix[destinationPosition[0]][destinationPosition[1]];
-
-            while(currentNode != destinationNode)
-            {
-                // Find Better adyacent Node
-                Node tempNode = FindFromOpenList(currentNode.index[0], currentNode.index[1]);
-                if(tempNode == null)
-                {
-                    Console.WriteLine($"NO SOLUTION FOUND AT {currentNode.index[0]}, {currentNode.index[1]}");
-                    break;
-                }
-                else
-                {
-                    closeNodes.Add(tempNode);
-                    currentNode = tempNode;
+                    columnDistance = Math.Abs(j - matrix.DestinationPoint[1]);
+                    heuristic = rowDistance + columnDistance;
+                    openList.Add(new Node(false, heuristic, i, j));            
                 }
             }
-
-            Console.WriteLine("SOLUTION FOUND");
-
-            StringBuilder result = new StringBuilder();
-            foreach (Node node in closeNodes)
-            {
-                result.Append($"{node.index[0]}, {node.index[1]} \n");
-            }
-
-            Console.WriteLine(result);
-            return false;
         }
 
         /// <summary>
-        /// Get the lowest f node that is not a wall and is not on closed list
+        /// Returns the adyacent nodes to the paramenter one
+        /// the arrays is sorted from the less F value
         /// </summary>
         /// <param name="current"></param>
         /// <returns></returns>
-        private Node FindFromOpenList(int row, int column)
+        private Node[] GetAdyacentNodes(Node current)
         {
-            Node adyacentNode = GetLowestNode(row, column);
-            if(adyacentNode != null)
-            {
-                int onCloseList = closeNodes.FindIndex((Node node) => node == adyacentNode);
-                return (adyacentNode.isEmpty && onCloseList == -1) ? adyacentNode : null;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Returns the adyacent Node with the lowest F value
-        /// </summary>
-        /// <returns></returns>
-        private Node GetLowestNode(int row, int column)
-        {
-            float lowestF = nodeMatrix[row][column].FValue;
-            int testIndex;
-            Node tempNode = null;
+            List<Node> foundNodes = new List<Node>();
+            Node tempNode;
+            int tempIndex;
+            int row = current.index[0];
+            int column = current.index[1];
 
             // Check left Node
-            testIndex = row - 1;
-            if(testIndex > 0 && GetLowestF(testIndex, column, ref lowestF))
+            tempIndex = row - 1;
+            if(tempIndex >= 0)
             {
-                tempNode = nodeMatrix[testIndex][column];
-            }
-
-            // Check right Node
-            testIndex = row + 1;
-            if (testIndex < nodeMatrix.Length && GetLowestF(testIndex, column, ref lowestF))
-            {
-                tempNode = nodeMatrix[testIndex][column];
-            }
-
-            // Check up Node
-            testIndex = column - 1;
-            if(testIndex > 0 && GetLowestF(row, testIndex, ref lowestF))
-            {
-                tempNode = nodeMatrix[row][testIndex];
-            }
-
-            // Check down Node
-            testIndex = column + 1;
-            if (testIndex < nodeMatrix[row].Length && GetLowestF(row, testIndex, ref lowestF))
-            {
-                tempNode = nodeMatrix[row][testIndex];
-            }
-
-            return tempNode;
-        }
-
-        public void PrintFValues()
-        {
-            Console.WriteLine("F VALUES ARE:");
-            StringBuilder stringBuilder = new StringBuilder();
-            for(int  i = 0; i < nodeMatrix.Length; i++, stringBuilder.Append("\n"))
-            {
-                for (int j = 0; j < nodeMatrix[i].Length; j++)
+                tempNode = openList.Find((Node node) => node.index[0] == tempIndex && node.index[1] == column); 
+                if(tempNode != null)
                 {
-                    stringBuilder.Append($"{i},{j} = {nodeMatrix[i][j].FValue}  ");
+                    foundNodes.Add(tempNode);
                 }
             }
 
-            Console.WriteLine(stringBuilder);
+            // Check right Node
+            tempIndex = row + 1;
+            if(tempIndex < matrixColumns)
+            {
+                tempNode = openList.Find((Node node) => node.index[0] == tempIndex && node.index[1] == column);
+                if (tempNode != null)
+                {
+                    foundNodes.Add(tempNode);
+                }
+            }
+
+            // Check upper Node
+            tempIndex = column - 1;
+            if(tempIndex >= 0)
+            {
+                tempNode = openList.Find((Node node) => node.index[0] == row && node.index[1] == tempIndex);
+                if (tempNode != null)
+                {
+                    foundNodes.Add(tempNode);
+                }
+            }
+
+            // Check below Node
+            tempIndex = column + 1;
+            if (tempIndex < matrixRows)
+            {
+                tempNode = openList.Find((Node node) => node.index[0] == row && node.index[1] == tempIndex);
+                if (tempNode != null)
+                {
+                    foundNodes.Add(tempNode);
+                }
+            }
+
+            foundNodes.Sort();
+            return foundNodes.ToArray();
         }
 
-        private bool GetLowestF(int row, int column, ref float value)
+        public void Solve()
         {
-            float nodeF;
-            if (nodeMatrix[row][column] == null)
+            Node initialNode = openList.Find((Node node) => node.index[0] == initialIndex[0] && node.index[1] == initialIndex[1]);
+            Route initialRoute = new Route();
+            initialRoute.Nodes.Add(initialNode);
+            openList.Remove(initialNode);
+            closedList.Add(initialNode);
+
+            EvaluateRoutes(initialRoute);
+
+            routes.Sort();
+
+        }
+
+        public void PrintSolution()
+        {
+            Console.WriteLine();
+            if(routes.Count <= 0)
             {
-                Console.WriteLine($"Node at {row}, {column} is null");
+                Console.WriteLine($"A* has not found any route that get to the solution point {finalIndex[0]}, {finalIndex[1]}");
             }
-            else if (nodeMatrix[row][column].FValue < value)
+            else
             {
-                value = nodeMatrix[row][column].FValue;
-                return true;
+                for (int i = 0; i < routes.Count; i++)
+                {
+                    Console.WriteLine($"ROUTE FOUND # {i}");
+                    routes[i].Print();
+                }
             }
-            nodeF = nodeMatrix[row][column].FValue;
-            return false;
+
+            Console.WriteLine("FINISH A*");
+        }
+
+        public void EvaluateRoutes(Route current)
+        {
+            while (current.FinalNode.index[0] != finalIndex[0] || current.FinalNode.index[1] != finalIndex[1])
+            {
+                Node[] adyacentNodes = GetAdyacentNodes(current.FinalNode);
+                if(adyacentNodes == null || adyacentNodes.Length == 0) { break; }
+                
+                for (int i = 0; i < adyacentNodes.Length; i++)
+                {
+                    if(i == 0)
+                    {
+                        current.Nodes.Add(adyacentNodes[0]);
+                        if(adyacentNodes[i].index[0] != finalIndex[0] || adyacentNodes[i].index[1] != finalIndex[1])
+                        {
+                            openList.Remove(adyacentNodes[i]);
+                        }
+                        continue;
+                    }
+
+                    if (adyacentNodes[i].index[0] != finalIndex[0] || adyacentNodes[i].index[1] != finalIndex[1])
+                    {
+                        openList.Remove(adyacentNodes[i]);
+                    }
+                    Route childRoute = new Route(current, current.Nodes.Count - 1);
+                    childRoute.Nodes.Add(adyacentNodes[i]);
+                    current.ChildrenRoutes.Add(childRoute);
+                }
+            }
+
+            bool hasFoundSolution = (current.FinalNode.index[0] == finalIndex[0] && current.FinalNode.index[1] == finalIndex[1]);
+            if(hasFoundSolution) { routes.Add(current); }
+
+            for (int i = 0; i < current.ChildrenRoutes.Count; i++)
+            {
+                EvaluateRoutes(current.ChildrenRoutes[i]);
+            }
         }
     }
+
 }

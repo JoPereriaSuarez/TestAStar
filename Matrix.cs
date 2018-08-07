@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace ConsoleApp1
+namespace AStar
 {
     /// <summary>
     /// Representation of laberythm
@@ -39,10 +36,10 @@ namespace ConsoleApp1
         public void AddColumnValues()
         {           
             string[] userValues;
-            int temp_value;
+            int tempValue;
             for (int i = 0; i < rows; i++)
             {
-                int[] temp_columns_values = new int[columns];
+                int[] tempRowValues = new int[columns];
                 bool isCorrect = false;
                 do
                 {
@@ -57,13 +54,13 @@ namespace ConsoleApp1
 
                     for (int j = 0; j < columns; j++)
                     {
-                        if(!Int32.TryParse(userValues[j], out temp_value))
+                        if(!Int32.TryParse(userValues[j], out tempValue))
                         {
                             Console.WriteLine($"Error reading row #{i}");
                             break;
                         }
 
-                        temp_columns_values[j] = temp_value;
+                        tempRowValues[j] = tempValue;
                     }
                     //for (int k = 0; k < temp_columns_values.Length; k++)
                     //{
@@ -72,7 +69,7 @@ namespace ConsoleApp1
                     isCorrect = true;
                 }
                 while (!isCorrect);
-                Values[i] = temp_columns_values;                
+                Values[i] = tempRowValues;                
             }
         }
 

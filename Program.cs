@@ -1,6 +1,6 @@
 using System;
 
-namespace ConsoleApp1
+namespace AStar
 {
     class Program
     {
@@ -32,15 +32,10 @@ namespace ConsoleApp1
             Console.WriteLine();
 
             matrix.SetDestinationPoint();
-            //NodeTree nodeTree = new NodeTree(matrix);
-            //nodeTree.Initialize();
-            //nodeTree.SetNodeChildren();
 
-            //nodeTree.Solve();
             Labyrinth labyrinth = new Labyrinth(matrix);
-            labyrinth.PrintFValues();
             labyrinth.Solve();
-
+            labyrinth.PrintSolution();
             Console.WriteLine();
 
             Console.Read();
